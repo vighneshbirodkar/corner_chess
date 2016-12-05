@@ -509,18 +509,18 @@ function calculateSquareSize() {
   // pad one pixel
   var boardWidth = containerWidth - 1;
 
-  while (boardWidth % 8 !== 0 && boardWidth > 0) {
+  while (boardWidth % cfg.boardSize !== 0 && boardWidth > 0) {
     boardWidth--;
   }
 
-  return (boardWidth / 8);
+  return (boardWidth / cfg.boardSize);
 }
 
 // create random IDs for elements
 function createElIds() {
   // squares on the board
-  for (var i = 0; i < COLUMNS.length; i++) {
-    for (var j = 1; j <= 8; j++) {
+  for (var i = 0; i < cfg.columns.length; i++) {
+    for (var j = 1; j <= cfg.boardSize; j++) {
       var square = COLUMNS[i] + j;
       SQUARE_ELS_IDS[square] = square + '-' + createId();
     }
@@ -585,16 +585,17 @@ function buildBoard(orientation) {
 
   // algebraic notation / orientation
   var alpha = deepCopy(COLUMNS);
-  var row = 8;
+  var row = cfg.boardSize;
   if (orientation === 'black') {
     alpha.reverse();
     row = 1;
   }
 
   var squareColor = 'white';
-  for (var i = 0; i < 8; i++) {
+  for (var i = 0; i < cfg.boardSize; i++) {
     html += '<div class="' + CSS.row + '">';
-    for (var j = 0; j < 8; j++) {
+    squareColor = (i%2 ? 'black': 'white');  
+    for (var j = 0; j < cfg.boardSize; j++) {
       var square = alpha[j] + row;
 
       html += '<div class="' + CSS.square + ' ' + CSS[squareColor] + ' ' +
@@ -606,7 +607,7 @@ function buildBoard(orientation) {
       if (cfg.showNotation === true) {
         // alpha notation
         if ((orientation === 'white' && row === 1) ||
-            (orientation === 'black' && row === 8)) {
+            (orientation === 'black' && row === cfg.boardSize)) {
           html += '<div class="' + CSS.notation + ' ' + CSS.alpha + '">' +
             alpha[j] + '</div>';
         }
@@ -1443,7 +1444,7 @@ widget.resize = function() {
   SQUARE_SIZE = calculateSquareSize();
 
   // set board width
-  boardEl.css('width', (SQUARE_SIZE * 8) + 'px');
+  boardEl.css('width', (SQUARE_SIZE * cfg.boardSize) + 'px');
 
   // set drag piece size
   draggedPieceEl.css({
