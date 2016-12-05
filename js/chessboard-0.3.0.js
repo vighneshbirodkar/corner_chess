@@ -1183,11 +1183,15 @@ function beginDraggingPiece(source, piece, x, y) {
       left: x - (SQUARE_SIZE / 2),
       top: y - (SQUARE_SIZE / 2)
     });
-
+  
   if (source !== 'spare') {
     // highlight the source square and hide the piece
     $('#' + SQUARE_ELS_IDS[source]).addClass(CSS.highlight1)
       .find('.' + CSS.piece).css('display', 'none');
+  }
+  if (source == 'spare') {
+    var pieceId = SPARE_PIECE_ELS_IDS[piece];
+    $('#' + pieceId).css('visibility', 'hidden');
   }
 }
 
@@ -1490,7 +1494,6 @@ function mousedownSquare(e) {
   if (cfg.draggable !== true) return;
 
   var square = $(this).attr('data-square');
-
   // no piece on this square
   if (validSquare(square) !== true ||
       CURRENT_POSITION.hasOwnProperty(square) !== true) {
