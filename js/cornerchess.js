@@ -82,15 +82,15 @@ var onDragStart = function(source, piece, position, orientation) {
         if (game.in_checkmate()) {
 
             showAlert("The game has ended in a checkmate.", false);
-            gameOver = true;
+            endGame();
         } else if (game.in_stalemate()) {
 
             showAlert("The game has ended in a draw (stalemate).", false);
-            gameOver = true;
+            endGame();
         } else if (game.in_threefold_repetition()) {
 
             showAlert("The game has ended in a draw (three fold repetition).", false);
-            gameOver = true;
+            endGame();
         }
     }
 
@@ -100,6 +100,34 @@ var onDragStart = function(source, piece, position, orientation) {
     return false;
   }
 };
+
+var endGame = function() {
+  gameOver = true;
+
+  // Send score to 
+  try {
+    var winner = (game.turn() == 'w') ? 'Black' : 'White';
+    var score = 100.00 / (moves / 2);
+    $.ajax({
+      url: '../../dbman/saveScore.php',
+      data: {
+        gamename: 'Corner Chess',
+        playername: winner,
+        score: score
+      },
+      dataType: 'json',
+      type: 'GET',
+      success: function(response) {
+        console.log('AJAX success', response);
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        console.log('AJAX error', xhr, ajaxOptions, thrownError);
+      }
+    });
+  } catch(err) {
+    console.log(err);
+  }
+}
 
 var isPieceKing = function(piece) {
     return piece[1].toLowerCase() == 'k';
@@ -303,7 +331,7 @@ var updateStatus = function() {
       status = 'Game over, ' + moveColor + ' is in a stalemate.';
     }
 
-    gameOver = true;
+    endGame();
     showAlert(status, false);
   }
   else if (game.in_checkmate() === true) {
