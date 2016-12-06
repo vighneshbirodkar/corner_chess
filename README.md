@@ -12,5 +12,6 @@ Edit the file `css/chessboard-0.3.0.css` to change the board square colors. The 
 are stored as png files in `img/chesspieces/`.
 
 ### Minimum number of moves to check
-Edit the variables `minTurnsBeforeCheckBlack` and  `minTurnsBeforeCheckWhite` to configure
-how many turns each color has to wait before placing their opponent in check.
+Edit the variables `minTurnsBeforeCheckBlack` and  `minTurnsBeforeCheckWhite` in
+`js/cornerchess.js` to configure how many turns each color has to wait before placing their
+opponent in check.
