@@ -25,6 +25,10 @@
     <div class="row">
       <div class="col-md-3" style="margin-top:50px;">
 
+    <div class="alert btn-primary">
+        <h2>Corner Chess</h2>
+    </div>
+
 	<div class="alert alert-info" role="alert" id="msgbox">
 	  <b>White</b> to move. 
 	</div>
@@ -36,11 +40,17 @@
 	<div class="well">
 	  <b >Ply: <span id="moves"> 0 </span> </b>
 	</div>
+    <div class="alert alert-success">
+        <b >Move History:</b>
+        <ul id="moveHistory" class="list-group" 
+            style="max-height:200px; overflow-y:scroll; padding-top: 10px">
+        </ul>
+    </div>
       </div>
       <div class="col-md-6">
 	<div id="board" style="width: 450px; margin: 0 auto"></div>
 	<div class="text-center">
-	  <div class="btn-group" role="group" >
+	  <div class="btn-group" role="group" style="padding-top: 20px;">
 	    <button id="btn4" type="button" class="btn btn-primary">4x4</button>
 	    <button id="btn5" type="button" class="btn btn-primary">5x5</button>
 	    <button id="btn6" type="button" class="btn btn-primary">6x6</button>
@@ -51,14 +61,42 @@
       </div>
       <div class="col-md-3 " style="margin-top:50px; padding-right:10px">
 	<div class="panel panel-default">
-	  <div class="panel-body">
-	    <h3>Rules</h3>
-	    <ul class="list-group">
-	      <li class="list-group-item">Each player must place king on board first.</li>
-	      <li class="list-group-item">Either place a piece from right board or make a normal move.</li>
-	      <li class="list-group-item">White cannot check before black has checked or ply 5.</li>
-          <li class="list-group-item">Black cannot check before ply 3.</li>
-	    </ul>
+	  <div class="panel-body  alert-info">
+
+        <h3>Rules</h3>
+        <ul class="list-group">
+          <li class="list-group-item">
+            At each ply, the player can either bring a new piece into play, 
+            or move an existing piece in the board.
+          </li>
+          <li class="list-group-item">
+            The first move for each player (white and black), must be bringing the King into play.
+          </li>
+          <li class="list-group-item">
+            Pieces being brought into play cannot be placed over an existing piece.
+          </li>
+          <li class="list-group-item">
+            White can only check black after black has checked or at ply 4 (whichever is earlier).
+           </li>
+          <li class="list-group-item">
+            Black cannot check white before ply 2.
+          </li>
+        </ul>
+
+        <h3>To Play</h3>
+        <ul class="list-group">
+          <li class="list-group-item">
+            Select a board size to play corner chess on.
+          </li>
+          <li class="list-group-item">
+            Drag pieces either from outside the board into the board, or a piece inside the board
+            to another desired location.
+          </li>
+          <li class="list-group-item">
+            When a game ends, select the board size option below to restart the game.
+          </li>
+        </ul>
+
 	  </div>
 	</div>
       </div>

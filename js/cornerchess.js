@@ -7,9 +7,14 @@ function waitAndHideAlert(){
 };
 
 
-function showAlert(msg){
+function showAlert(msg, hide){
   $("#alertbox").text(msg);
-  $("#alertbox").animate({opacity: 1.0}, 300, waitAndHideAlert);
+
+  if (hide == undefined || hide == true) {
+    $("#alertbox").animate({opacity: 1.0}, 300, waitAndHideAlert);
+  } else if (hide == false) {
+    $("#alertbox").animate({opacity: 1.0});
+  }
 };
 
 function showWhoMoves(whoMoves){
@@ -20,20 +25,54 @@ function showNumMoves(n){
   $("#moves").html("" + n);
 }
 
+function appendMoveInUI(source, target, piece) {
+
+  var pieceMap = {r: 'Rook', b: 'Bishop', k: 'King', q: 'Queen', n: 'Knight', p: 'Pawn'};
+  var playerMap = {w: 'White', b: 'Black'};
+
+  var htmlPre = '<li class="list-group-item">';
+  var htmlPost = '</li>';
+  var moveStr = playerMap[piece[0].toLowerCase()] + ': ' + 
+                pieceMap[piece[1].toLowerCase()] + 
+                ' from ' + source + ' to ' + target + '.';
+
+  // Add move to UI
+  var element = $( '#moveHistory' );
+  element.append( htmlPre + moveStr + htmlPost );
+  
+  // Scroll to bottom
+  var height = element[0].scrollHeight;
+  console.log(height)
+  element.scrollTop(height);
+}
+
+function clearMoveHistory() {
+  $( '#moveHistory' ).html( '' ); 
+}
+
+// chessboard.js object, holds the UI state of the game
 var board;
 
 var init = function(boardSize) {
+
+clearMoveHistory();
 
 var position = '8/8/8/8/8/8/8/8 w - c3 0 1';
 
 var moves = 0;
 var gameStarted = false;
 var hasBlackChecked = false;
+
+// Configurable - Minimum number of moves before black can check
 var minTurnsBeforeCheckBlack = 2;
+
+// Configurable - Minimum number of moves before white can check
 var minTurnsBeforeCheckWhite = 4;
 
-var game = new Chess(position);
 var gameOver = false;
+
+// chess.js object, holds the game state for move validation
+var game = new Chess(position);
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
@@ -42,20 +81,18 @@ var onDragStart = function(source, piece, position, orientation) {
     if (gameStarted) {
         if (game.in_checkmate()) {
 
-            showAlert("The game has ended in a checkmate.");
+            showAlert("The game has ended in a checkmate.", false);
             gameOver = true;
         } else if (game.in_stalemate()) {
 
-            showAlert("The game has ended in a draw (stalemate).");
+            showAlert("The game has ended in a draw (stalemate).", false);
             gameOver = true;
         } else if (game.in_threefold_repetition()) {
 
-            showAlert("The game has ended in a draw (three fold repetition).");
+            showAlert("The game has ended in a draw (three fold repetition).", false);
             gameOver = true;
         }
     }
-
-    // console.log('Game over', gameOver);
 
   if ((gameOver === true) ||
       (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
@@ -93,7 +130,7 @@ var isSpareMoveValid = function(piece, target) {
 var ruleViolated = function(turn, piece, target, newPos) {
 
     // console.log('ruleViolated', turn, piece, target);
-    console.log('hasBlackChecked', hasBlackChecked);
+    // console.log('hasBlackChecked', hasBlackChecked);
 
     // Rule 1: Can't move to a check position
     var prevTurn = (turn === 'w') ? 'b' : 'w';
@@ -153,9 +190,11 @@ var setGameState = function(pos) {
     }
 };
 
-var incrementMoves = function() {
+var updateMove = function(source, target, piece) {
   moves++;
   showNumMoves(parseInt(moves / 2, 10));  
+
+  appendMoveInUI(source, target, piece);
 }
 
 var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
@@ -179,10 +218,10 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
             return 'snapback';
         }
 
-        incrementMoves();
+        updateMove(source, target, piece);
 
         if (moves == 2) {
-            console.log('moves', moves);
+            // console.log('moves', moves);
             gameStarted = true;
         }
 
@@ -208,7 +247,7 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
     return 'snapback';
   }
 
-  incrementMoves();
+  updateMove(source, target, piece);
   updateStatus();
 };
 
@@ -229,13 +268,10 @@ var noValidMovesInBoard = function() {
   var hasValidMove = false;
 
   for (var i = 0, len = legalMoves.length; i < len; i++) {
-    // console.log(legalMoves[i]);
     var legalMove = legalMoves[i].to;
     
     var row = parseInt(legalMove[1], 10);
     var column = columnMap[legalMove[0]];
-
-    console.log(row, column, cfg.boardSize);
 
     if (row <= cfg.boardSize && column <= cfg.boardSize) {
       return false;
@@ -268,11 +304,11 @@ var updateStatus = function() {
     }
 
     gameOver = true;
-    showAlert(status);
+    showAlert(status, false);
   }
   else if (game.in_checkmate() === true) {
     status = 'Game over, ' + moveColor + ' is checkmated.';
-    showAlert(status);
+    showAlert(status, false);
   }
 
   // game still on
