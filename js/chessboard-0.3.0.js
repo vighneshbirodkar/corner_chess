@@ -671,9 +671,9 @@ function buildPiece(piece, hidden, id) {
 }
 
 function buildSparePieces(color) {
-  var pieces = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
+  var pieces = ['wK', 'wQ', 'wR', 'wB', 'wN'];
   if (color === 'black') {
-    pieces = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
+    pieces = ['bK', 'bQ', 'bR', 'bB', 'bN'];
   }
 
   var html = '';
@@ -1062,9 +1062,10 @@ function removeSquareHighlights() {
 
 function snapbackDraggedPiece() {
   // there is no "snapback" for spare pieces
+  console.log('snapback dragged piece');
   if (DRAGGED_PIECE_SOURCE === 'spare') {
-    trashDraggedPiece();
-    return;
+    //trashDraggedPiece();
+    //return;
   }
 
   removeSquareHighlights();
@@ -1073,6 +1074,10 @@ function snapbackDraggedPiece() {
   function complete() {
     drawPositionInstant();
     draggedPieceEl.css('display', 'none');
+    if (DRAGGED_PIECE_SOURCE == 'spare'){
+      console.log('snapback comlete spare piece');
+      $('#' + SPARE_PIECE_ELS_IDS[DRAGGED_PIECE]).css('visibility', 'initial');
+    }
 
     // run their onSnapbackEnd function
     if (cfg.hasOwnProperty('onSnapbackEnd') === true &&
@@ -1082,10 +1087,19 @@ function snapbackDraggedPiece() {
     }
   }
 
+  
   // get source square position
-  var sourceSquarePosition =
+  if(DRAGGED_PIECE_SOURCE == 'spare') {
+    var sourceSquarePosition =
+	$('#' + SPARE_PIECE_ELS_IDS[DRAGGED_PIECE]).offset();
+    //$('#' + SPARE_PIECE_ELS_IDS[DRAGGED_PIECE]).css('visibility', 'block');
+  }
+  else {
+    var sourceSquarePosition =
     $('#' + SQUARE_ELS_IDS[DRAGGED_PIECE_SOURCE]).offset();
 
+  }
+  console.log(sourceSquarePosition, DRAGGED_PIECE, DRAGGED_PIECE_SOURCE);
   // animate the piece to the target square
   var opts = {
     duration: cfg.snapbackSpeed,
@@ -1187,11 +1201,14 @@ function beginDraggingPiece(source, piece, x, y) {
   if (source !== 'spare') {
     // highlight the source square and hide the piece
     $('#' + SQUARE_ELS_IDS[source]).addClass(CSS.highlight1)
-      .find('.' + CSS.piece).css('display', 'none');
+      .find('.' + CSS.piece).css('display', 'none'); 
   }
   if (source == 'spare') {
+    var x = $('#' + pieceId).css('visibility');
+    console.log('x = ',x)
     var pieceId = SPARE_PIECE_ELS_IDS[piece];
     $('#' + pieceId).css('visibility', 'hidden');
+
   }
 }
 
@@ -1232,12 +1249,14 @@ function updateDraggedPiece(x, y) {
 
 function stopDraggedPiece(location) {
   // determine what the action should be
+  
+  console.log('Stop Dragged Piece');
   var action = 'drop';
   if (location === 'offboard' && cfg.dropOffBoard === 'snapback') {
     action = 'snapback';
   }
   if (location === 'offboard' && cfg.dropOffBoard === 'trash') {
-    action = 'trash';
+    action = 'snapback';
   }
 
   // run their onDrop function, which can potentially change the drop action
