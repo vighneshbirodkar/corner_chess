@@ -48,7 +48,7 @@
             Black cannot check white before ply 2.
           </li>
         </ul>
-
+	<h3>Hit <b> POPUP</b> to play</h3>
         <form id="gameSettings" class="well">
         </form>
 	<h3 style="text-align:center">Screenshot</h3>
