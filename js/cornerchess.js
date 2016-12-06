@@ -14,13 +14,15 @@ function showAlert(msg){
 
 function showWhoMoves(whoMoves){
   $("#msgbox").html("<b>" + whoMoves + "</b> to move.");
-}
+};
 
 function showNumMoves(n){
   $("#moves").html("" + n);
 }
 
-var init = function() {
+var board;
+
+var init = function(boardSize) {
 
 var position = '8/8/8/8/8/8/8/8 w - c3 0 1';
 
@@ -28,9 +30,8 @@ var moves = 0;
 var gameStarted = false;
 var hasBlackChecked = false;
 var minTurnsBeforeCheckBlack = 2;
-var minTurnsBeforeCheckWhite = 5;
+var minTurnsBeforeCheckWhite = 4;
 
-var board;
 var game = new Chess(position);
 var gameOver = false;
 
@@ -65,7 +66,7 @@ var onDragStart = function(source, piece, position, orientation) {
 
 var isPieceKing = function(piece) {
     return piece[1].toLowerCase() == 'k';
-}
+};
 
 var isSpareMoveValid = function(piece, target) {
 
@@ -87,7 +88,7 @@ var isSpareMoveValid = function(piece, target) {
     }
 
     return true;
-}
+};
 
 var ruleViolated = function(turn, piece, target, newPos) {
 
@@ -130,7 +131,7 @@ var ruleViolated = function(turn, piece, target, newPos) {
     }
 
     return false;
-}
+};
 
 var getBoardFromPosition = function(turn, pos) {
     var fen = ChessBoard.objToFen(pos);
@@ -138,7 +139,7 @@ var getBoardFromPosition = function(turn, pos) {
     var suffix = ' ' + nextMove + ' - c3 0 1';
 
     return new Chess(fen + suffix);
-}
+};
 
 var setGameState = function(pos) {
 
@@ -150,6 +151,11 @@ var setGameState = function(pos) {
     if (game.turn() == 'w' && game.in_check()) {
         hasBlackChecked = true;
     }
+};
+
+var incrementMoves = function() {
+  moves++;
+  showNumMoves(parseInt(moves / 2, 10));  
 }
 
 var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
@@ -173,7 +179,8 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
             return 'snapback';
         }
 
-        moves++;
+        incrementMoves();
+
         if (moves == 2) {
             console.log('moves', moves);
             gameStarted = true;
@@ -201,8 +208,7 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
     return 'snapback';
   }
 
-  moves++;
-
+  incrementMoves();
   updateStatus();
 };
 
@@ -221,7 +227,6 @@ var noValidMovesInBoard = function() {
   var columnMap = {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8};
   var legalMoves = game.moves({ verbose: true });
   var hasValidMove = false;
-  // console.log('Moves', legalMoves);
 
   for (var i = 0, len = legalMoves.length; i < len; i++) {
     // console.log(legalMoves[i]);
@@ -230,20 +235,15 @@ var noValidMovesInBoard = function() {
     var row = parseInt(legalMove[1], 10);
     var column = columnMap[legalMove[0]];
 
-    // row = 7;
-    // column = 4;
-
     console.log(row, column, cfg.boardSize);
 
     if (row <= cfg.boardSize && column <= cfg.boardSize) {
-      // console.log('Returning that there is a valid move');
       return false;
     }
   }
 
-  // console.log('Returning that there are no valid moves');
   return true;
-}
+};
 
 var updateStatus = function() {
   var status = '';
@@ -293,6 +293,11 @@ var updateStatus = function() {
   }
 };
 
+var columnStr = 'abcdefgh';
+columnStr = columnStr.substring(0, boardSize);
+
+// alert(columnStr);
+
 var cfg = {
   draggable: true,
   dropOffBoard: 'snapback',
@@ -300,9 +305,9 @@ var cfg = {
   onDragStart: onDragStart,
   onDrop: onDrop,
   onSnapEnd: onSnapEnd,
-  boardSize: 6,
+  boardSize: boardSize,
   sparePieces: true,
-  columns: 'abcdef',
+  columns: columnStr,
   showNotation: true,
   position: position
 };
@@ -310,7 +315,31 @@ var cfg = {
 board = ChessBoard('board', cfg);
 
 updateStatus();
-
-
 };
-$(document).ready(init);
+
+init(5);
+
+$('#btn4').click(function() {
+  board.destroy();
+  init(4);
+});
+
+$('#btn5').click(function() {
+  board.destroy();
+  init(5);
+});
+
+$('#btn6').click(function() {
+  board.destroy();
+  init(6);
+});
+
+$('#btn7').click(function() {
+  board.destroy();
+  init(7);
+});
+
+$('#btn8').click(function() {
+  board.destroy();
+  init(8);
+});
