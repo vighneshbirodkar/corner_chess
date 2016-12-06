@@ -1,9 +1,9 @@
 
 'use strict';
-console.log('corner chess'); 
+console.log('Corner Chess'); 
 
 function waitAndHideAlert(){
-  $("#alertbox").delay(1000).animate({opacity: 0.0}, 300)
+  $("#alertbox").delay(2000).animate({opacity: 0.0}, 300)
 };
 
 
@@ -18,21 +18,16 @@ function showWhoMoves(whoMoves){
 
 var init = function() {
 
-// var position = '8/8/8/8/7K/8/7R/3k4 w - c3 0 1';
 var position = '8/8/8/8/8/8/8/8 w - c3 0 1';
 
 var moves = 0;
 var gameStarted = false;
 var hasBlackChecked = false;
-var minTurnsBeforeCheck = 3;
+var minTurnsBeforeCheckBlack = 2;
+var minTurnsBeforeCheckWhite = 5;
 
-var board,
-  game = new Chess(position),
-  statusEl = $('#status'),
-  fenEl = $('#fen'),
-  pgnEl = $('#pgn');
-
-// alert(game.fen());
+var board;
+var game = new Chess(position);
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
@@ -42,23 +37,23 @@ var onDragStart = function(source, piece, position, orientation) {
 
     if (gameStarted) {
         if (game.in_checkmate()) {
-            
-            console.log('In checkmate');
+
+            showAlert("The game has ended in a checkmate.");
             gameOver = true;
         } else if (game.in_stalemate()) {
-            
-            console.log('In stalemate');
+
+            showAlert("The game has ended in a draw (stalemate).");
             gameOver = true;
         } else if (game.in_threefold_repetition()) {
-            
-            console.log('In three fold repetition');
+
+            showAlert("The game has ended in a draw (three fold repetition).");
             gameOver = true;
         }
     }
 
     // console.log('Game over', gameOver);
 
-  if (gameOver ||
+  if ((gameOver === true) ||
       (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
     return false;
@@ -74,6 +69,7 @@ var isSpareMoveValid = function(piece, target) {
     // First move for each must be a king move
     if (moves < 2) {
         if (isPieceKing(piece) == false) {
+            showAlert('The first move must bring the King into the board.');
             return false;
         }
     }
@@ -83,12 +79,8 @@ var isSpareMoveValid = function(piece, target) {
     // console.log('target', target, existingPiece);
 
     if (existingPiece != null) {
+        showAlert('Can\'t capture a piece from outside the board.');
         return false;
-    }
-
-    moves++;
-    if (moves == 2) {
-        gameStarted = true;
     }
 
     return true;
@@ -104,29 +96,31 @@ var ruleViolated = function(turn, piece, target, newPos) {
     if (board.in_check()) {
 
         // console.log('Can\'t move into check');
+        showAlert('Can\'t move into check');
         return true;
     }
 
 
     // Rule 2: White can't check before black has
     if (turn == 'w') {
-        // console.log('hasBlackChecked', hasBlackChecked);
         if (hasBlackChecked == false) {
             var board = getBoardFromPosition(turn, newPos);
 
-            if (board.in_check()) {
-                // console.log('Black hasn\'t checked yet.');
+            if (moves / 2 <= minTurnsBeforeCheckWhite && board.in_check()) {
+                showAlert(
+                  'Black hasn\'t checked yet, and it hasn\'t been '
+                  + minTurnsBeforeCheckWhite + ' moves yet, so white can\'t check black.');
                 return true;
             }
         }
     }
 
-    // Rule 3: Black can't check for <minTurnsBeforeCheck> turns
+    // Rule 3: Black can't check for <minTurnsBeforeCheckBlack> turns
     if (turn == 'b') {
         var board = getBoardFromPosition(turn, newPos);
 
-        if (moves / 2 <= minTurnsBeforeCheck && board.in_check()) {
-            // console.log('Black can\'t check for ' + minTurnsBeforeCheck + ' turns');
+        if (moves / 2 <= minTurnsBeforeCheckBlack && board.in_check()) {
+            showAlert('Black can\'t check for the first ' + minTurnsBeforeCheckBlack + ' turns.');
             return true;
         }
     }
@@ -175,6 +169,12 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
             return 'snapback';
         }
 
+        moves++;
+        if (moves == 2) {
+            console.log('moves', moves);
+            gameStarted = true;
+        }
+
         setGameState(newPos);
         updateStatus();
         return;
@@ -194,6 +194,8 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
   // illegal move
   if (move === null) return 'snapback';
 
+  moves++;
+
   updateStatus();
 };
 
@@ -211,9 +213,13 @@ var updateStatus = function() {
     moveColor = 'Black';
   }
 
+  showWhoMoves(moveColor);
+
   // checkmate?
   if (game.in_checkmate() === true) {
-    status = 'Game over, ' + moveColor + ' is in checkmate.';
+    status = 'Game over, ' + moveColor + ' is checkmated.';
+
+    showAlert(status);
   }
 
   // game still on
@@ -223,14 +229,10 @@ var updateStatus = function() {
     // check?
     if (game.in_check() === true) {
       status += ', ' + moveColor + ' is in check';
+
+      showAlert(status);
     }
   }
-
-  // console.log(game.fen());
-
-  statusEl.html(status);
-  fenEl.html(game.fen());
-  pgnEl.html(game.pgn());
 };
 
 var cfg = {
