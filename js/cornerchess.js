@@ -32,12 +32,11 @@ var minTurnsBeforeCheckWhite = 5;
 
 var board;
 var game = new Chess(position);
+var gameOver = false;
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
 var onDragStart = function(source, piece, position, orientation) {
-
-    var gameOver = false;
 
     if (gameStarted) {
         if (game.in_checkmate()) {
@@ -93,6 +92,7 @@ var isSpareMoveValid = function(piece, target) {
 var ruleViolated = function(turn, piece, target, newPos) {
 
     // console.log('ruleViolated', turn, piece, target);
+    console.log('hasBlackChecked', hasBlackChecked);
 
     // Rule 1: Can't move to a check position
     var prevTurn = (turn === 'w') ? 'b' : 'w';
@@ -196,7 +196,10 @@ var onDrop = function(source, target, piece, newPos, oldPos, orientation) {
   });
 
   // illegal move
-  if (move === null) return 'snapback';
+  if (move === null) {
+    showAlert('Invalid move');
+    return 'snapback';
+  }
 
   moves++;
 
@@ -209,6 +212,39 @@ var onSnapEnd = function() {
   board.position();
 };
 
+var noValidMovesInBoard = function() {
+
+  if (moves <= 2) {
+    return false;
+  }
+
+  var columnMap = {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8};
+  var legalMoves = game.moves({ verbose: true });
+  var hasValidMove = false;
+  // console.log('Moves', legalMoves);
+
+  for (var i = 0, len = legalMoves.length; i < len; i++) {
+    // console.log(legalMoves[i]);
+    var legalMove = legalMoves[i].to;
+    
+    var row = parseInt(legalMove[1], 10);
+    var column = columnMap[legalMove[0]];
+
+    // row = 7;
+    // column = 4;
+
+    console.log(row, column, cfg.boardSize);
+
+    if (row <= cfg.boardSize && column <= cfg.boardSize) {
+      // console.log('Returning that there is a valid move');
+      return false;
+    }
+  }
+
+  // console.log('Returning that there are no valid moves');
+  return true;
+}
+
 var updateStatus = function() {
   var status = '';
 
@@ -220,9 +256,22 @@ var updateStatus = function() {
   showWhoMoves(moveColor);
 
   // checkmate?
-  if (game.in_checkmate() === true) {
-    status = 'Game over, ' + moveColor + ' is checkmated.';
+  if (noValidMovesInBoard() === true) {
 
+    console.log(game.in_check());
+    console.log(game.fen());
+
+    if (game.in_check()) {
+      status = 'Game over, ' + moveColor + ' is checkmated.';
+    } else {
+      status = 'Game over, ' + moveColor + ' is in a stalemate.';
+    }
+
+    gameOver = true;
+    showAlert(status);
+  }
+  else if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is checkmated.';
     showAlert(status);
   }
 
@@ -233,6 +282,11 @@ var updateStatus = function() {
     // check?
     if (game.in_check() === true) {
       status += ', ' + moveColor + ' is in check';
+
+      if (game.turn() == 'w') {
+        console.log('Setting hasBlackChecked to true')
+        hasBlackChecked = true;
+      }
 
       showAlert(status);
     }
@@ -246,9 +300,9 @@ var cfg = {
   onDragStart: onDragStart,
   onDrop: onDrop,
   onSnapEnd: onSnapEnd,
-  boardSize: 8,
+  boardSize: 6,
   sparePieces: true,
-  columns: 'abcdefgh',
+  columns: 'abcdef',
   showNotation: true,
   position: position
 };
