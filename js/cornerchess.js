@@ -16,6 +16,10 @@ function showWhoMoves(whoMoves){
   $("#msgbox").html("<b>" + whoMoves + "</b> to move.");
 }
 
+function showNumMoves(n){
+  $("#moves").html("" + n);
+}
+
 var init = function() {
 
 var position = '8/8/8/8/8/8/8/8 w - c3 0 1';
