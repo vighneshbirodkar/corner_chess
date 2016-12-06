@@ -16,6 +16,9 @@
 // Chess Util Functions
 //------------------------------------------------------------------------------
 var COLUMNS = 'abcdefgh'.split('');
+var BLACK_SPARES = ['wK', 'wQ', 'wR', 'wB', 'wN'];  
+var WHITE_SPARES = ['bK', 'bQ', 'bR', 'bB', 'bN'];
+
 
 function validMove(move) {
   // move should be a string
@@ -671,9 +674,9 @@ function buildPiece(piece, hidden, id) {
 }
 
 function buildSparePieces(color) {
-  var pieces = ['wK', 'wQ', 'wR', 'wB', 'wN'];
+  var pieces = WHITE_SPARES;
   if (color === 'black') {
-    pieces = ['bK', 'bQ', 'bR', 'bB', 'bN'];
+    pieces = BLACK_SPARES;
   }
 
   var html = '';
